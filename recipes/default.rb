@@ -34,10 +34,34 @@ when "debian", "ubuntu"
   end
 
   if node["ruby"]["default_version"]
-    package "ruby-switch"
+    # ubuntu precise and debian wheezy
+    package "ruby-switch" do
+      not_if { !File.symlink?("/etc/alternatives/ruby") }
+    end
 
     execute "ruby-switch" do
+      not_if { !File.symlink?("/etc/alternatives/ruby") }
       command "ruby-switch --set ruby#{node["ruby"]["default_version"]}"
+    end
+
+    # ubuntu trusty and next debian
+    execute "ruby-set-version" do
+      not_if { File.symlink?("/etc/alternatives/ruby") }
+      command <<-BASH
+      ln -sf /usr/bin/erb#{node["ruby"]["default_version"]} /usr/bin/erb
+      ln -sf /usr/bin/gem#{node["ruby"]["default_version"]} /usr/bin/gem
+      ln -sf /usr/bin/irb#{node["ruby"]["default_version"]} /usr/bin/irb
+      ln -sf /usr/bin/rake#{node["ruby"]["default_version"]} /usr/bin/rake
+      ln -sf /usr/bin/rdoc#{node["ruby"]["default_version"]} /usr/bin/rdoc
+      ln -sf /usr/bin/ri#{node["ruby"]["default_version"]} /usr/bin/ri
+      ln -sf /usr/bin/ruby#{node["ruby"]["default_version"]} /usr/bin/ruby
+      ln -sf /usr/bin/testrb#{node["ruby"]["default_version"]} /usr/bin/testrb
+      ln -sf /usr/share/man/man1/erb#{node["ruby"]["default_version"]} /usr/share/man/man1/erb
+      ln -sf /usr/share/man/man1/irb#{node["ruby"]["default_version"]} /usr/share/man/man1/irb
+      ln -sf /usr/share/man/man1/rake#{node["ruby"]["default_version"]} /usr/share/man/man1/rake
+      ln -sf /usr/share/man/man1/ri#{node["ruby"]["default_version"]} /usr/share/man/man1/ri
+      ln -sf /usr/share/man/man1/ruby#{node["ruby"]["default_version"]} /usr/share/man/man1/ruby
+      BASH
     end
   end
 
